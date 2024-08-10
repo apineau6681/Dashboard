@@ -3,10 +3,16 @@ from googleapiclient.discovery import build
 from google.oauth2.service_account import Credentials
 import datetime
 import logging
+import os
+
+# Get the current file's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Construct the log file path
+log_file_path = os.path.join(current_dir, '../log/youtube_api_log.txt')
 
 # Configuration du logging
 logging.basicConfig(
-    filename='../log/youtube_api_log.txt',  # Nom du fichier de log
+    filename=log_file_path,  # Nom du fichier de log
     level=logging.INFO,              # Niveau de log
     format='%(asctime)s - %(levelname)s - %(message)s',  # Format du log
 )
