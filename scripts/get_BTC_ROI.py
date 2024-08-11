@@ -71,6 +71,7 @@ for period, start_date in roi_start_dates.items():
     else:
       df_roi.loc[day, period] = None  # Assigner None si aucune donnée disponible
 
+print(df_roi)
 
 # Access the output Google Sheet and write the DataFrame
 output_spreadsheet = client.open_by_key(OUTPUT_SPREADSHEET_ID)
