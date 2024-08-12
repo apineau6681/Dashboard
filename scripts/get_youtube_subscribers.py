@@ -50,7 +50,7 @@ def get_subscriber_count(api_key, channel_id):
         if 'items' in response and response['items']:
             subscriber_count = response['items'][0]['statistics']['subscriberCount']
             logging.info(f"number of subscribers returned fo {channel_id}: {subscriber_count}")
-            return response['items'][0]['statistics']['subscriberCount']
+            return int(response['items'][0]['statistics']['subscriberCount'])
         else:
             logging.warning(f"No stat found for channel {channel_id}")
             return None
@@ -94,7 +94,7 @@ def append_to_google_sheet(df, service_account_file, spreadsheet_id, range_name)
         result = service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range=range_name,
-            valueInputOption='RAW',
+            valueInputOption='USER_ENTERED',
             insertDataOption='INSERT_ROWS',
             body=body
         ).execute()
