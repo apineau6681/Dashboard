@@ -135,7 +135,7 @@ if __name__ == '__main__':
     csv_file = os.path.join(current_dir, 'channels.csv')
     # Remplacez par votre clé API YouTube et le chemin vers votre fichier JSON des clés
     api_key = 'AIzaSyDDrOYh5SJHaZw-n99sXFlSMS3uEPLXm4g'
-    service_account_file = 'dashboardcrypto-431910-f1f9c1cf4069.json'
+    service_account_file = os.path.join(current_dir, 'dashboardcrypto-431910-f1f9c1cf4069.json')
     spreadsheet_id = '1KxY1rkhY8YE6BArS69qu4e1LeutR-fvQk26mxU3lrL0'
     range_name = 'Sheet1'  # Plage où vous souhaitez ajouter les données, ajustez selon besoin
 

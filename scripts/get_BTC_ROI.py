@@ -33,20 +33,23 @@ btc_data = get_as_dataframe(input_worksheet, header=0)
 #NB of days to be returned
 nb_days = 600
 
+#From_2012_11_28 = '2012-11-28'
+From_2016_07_09 = '2016-07-09'
+From_2020_05_11 = '2020-05-11'
+From_2024_04_20 = '2024-04-20'
+
 #Declare ROI dataframe
 df_roi = pd.DataFrame(index=range(1, nb_days), columns = ['From_2016_07_09', 'From_2020_05_11', 'From_2024_04_20'])  # Index de 1 à 10
 # Set the name for the index column
 df_roi.index.name = 'Day'
 
 roi_start_dates = {
-    'From_2016_07_09': '2016-07-09',
-    'From_2020_05_11': '2020-05-11',
-    'From_2024_04_20': '2024-04-20'
+    'From_2016_07_09': From_2016_07_09,
+    'From_2020_05_11': From_2020_05_11,
+    'From_2024_04_20': From_2024_04_20
 }
 
-From_2016_07_09 = '2016-07-09'
-From_2020_05_11 = '2020-05-11'
-From_2024_04_20 = '2024-04-20'
+
 
 for period, start_date in roi_start_dates.items():
   #set price day1
