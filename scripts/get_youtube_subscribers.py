@@ -171,7 +171,7 @@ def append_to_google_sheet_views(df, service_account_file, spreadsheet_id, range
         logging.error(f"Error when adding data to the Google Sheets: {e}")
 
 # Main function to fetch data and append it to Google Sheets
-def fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_name):
+def fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_subscribers, range_views):
     try:
         df = pd.read_csv(csv_file, sep=';')
         #df = pd.read_csv('channels_test.csv', sep=';')
@@ -191,8 +191,8 @@ def fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, ra
         
         logging.info("Adding data in Google Sheets")
         # Append data to Google Sheets
-        #append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id, 'Sheet1')
-        append_to_google_sheet_views(df, service_account_file, spreadsheet_id, 'Sheet2')
+        append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id, range_subscribers)
+        append_to_google_sheet_views(df, service_account_file, spreadsheet_id, range_views)
     except Exception as e:
         logging.error(f"Error when retrieving and adding data: {e}")
 
@@ -205,9 +205,10 @@ if __name__ == '__main__':
     api_key = os.getenv("YOUTUBE_API_KEY")
     service_account_file = os.path.join(current_dir, 'dashboardcrypto-431910-f1f9c1cf4069.json')
     spreadsheet_id = '1KxY1rkhY8YE6BArS69qu4e1LeutR-fvQk26mxU3lrL0'
-    range_name = 'Sheet1'  # Sheet range we want to add the data
+    range_subscribers = 'subscribers'  # Sheet range we want to add the data
+    range_views = 'views'
 
     logging.info("Script start")
     # Main function call
-    fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_name)
+    fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_subscribers, range_views)
     logging.info("End of script")
