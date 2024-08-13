@@ -53,7 +53,7 @@ roi_start_dates = {
 
 for period, start_date in roi_start_dates.items():
   #set price day1
-  initial_price = btc_data.loc[btc_data['Date'] == start_date,['Close']]
+  initial_price = btc_data.loc[btc_data['Date'] == start_date, 'Close'].values[0]
 
   #calculates ROI for the next nb_days
   for day in range(1, nb_days+1):
@@ -61,16 +61,17 @@ for period, start_date in roi_start_dates.items():
     day_date_str = day_date.strftime('%Y-%m-%d')
 
     #retrieve BTC price at the given date
-    btc_day_price = btc_data.loc[btc_data['Date'] == day_date_str,['Close']]
+    btc_day_price = btc_data.loc[btc_data['Date'] == day_date_str,'Close']
 
     # Check if there is a price for the given date
     if not btc_day_price.empty:
       #calcultates ROI of the day
       #roi_day = ((btc_day_price.values[0] - initial_price) / initial_price) * 100
-      roi_day = btc_day_price.values[0] / initial_price
+      btc_day_price = btc_day_price.values[0]  # Get the scalar value
+      roi_day = btc_day_price / initial_price
       # Assign the ROI value to the 'period' column in roi_df
       #roi_df.loc[day, period] = btc_day_price.values[0].round(2)
-      df_roi.loc[day, period] = roi_day.values[0].round(2)
+      df_roi.loc[day, period] = round(roi_day, 2)
     else:
       df_roi.loc[day, period] = None  # Assigner None si aucune donnée disponible
 
