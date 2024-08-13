@@ -10,14 +10,14 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the log file path
 log_file_path = os.path.join(current_dir, '../log/youtube_api_log.txt')
 
-# Configuration du logging
+# Logging configuration
 logging.basicConfig(
     filename=log_file_path,  # Nom du fichier de log
     level=logging.INFO,              # Niveau de log
     format='%(asctime)s - %(levelname)s - %(message)s',  # Format du log
 )
 
-# Fonction pour obtenir l'ID de la chaîne à partir de l'identifiant ou de l'URL
+# Function to get the channel ID from the identifier or URL
 def get_channel_id(api_key, identifier):
     try:
         youtube = build('youtube', 'v3', developerKey=api_key)
@@ -38,7 +38,7 @@ def get_channel_id(api_key, identifier):
     except Exception as e:
         logging.error(f"Error when retrieving ID of channel {identifier}: {e}")
 
-# Fonction pour obtenir le nombre d'abonnés
+# Function to get the number of subscribers
 def get_subscriber_count(api_key, channel_id):
     try:
         youtube = build('youtube', 'v3', developerKey=api_key)
@@ -50,47 +50,66 @@ def get_subscriber_count(api_key, channel_id):
         if 'items' in response and response['items']:
             subscriber_count = response['items'][0]['statistics']['subscriberCount']
             logging.info(f"number of subscribers returned fo {channel_id}: {subscriber_count}")
-            return int(response['items'][0]['statistics']['subscriberCount'])
+            return int(subscriber_count)
         else:
             logging.warning(f"No stat found for channel {channel_id}")
             return None
     except Exception as e:
         logging.error(f"Error returned when retrieving number of subscribers for channel {channel_id}: {e}")
 
-# Fonction pour ajouter une ligne à Google Sheets
-def append_to_google_sheet(df, service_account_file, spreadsheet_id, range_name):
+# Function to get the total view count
+def get_view_count(api_key, channel_id):
+    try:
+        youtube = build('youtube', 'v3', developerKey=api_key)
+        request = youtube.channels().list(
+            part='statistics',
+            id=channel_id
+        )
+        response = request.execute()
+        if 'items' in response and response['items']:
+            view_count = response['items'][0]['statistics']['viewCount']
+            logging.info(f"number of views returned for {channel_id}: {view_count}")
+            return int(view_count)
+        else:
+            logging.warning(f"No stat found for channel {channel_id}")
+            return None
+    except Exception as e:
+        logging.error(f"Error when retrieving view count for channel {channel_id}: {e}")
+
+# Function to append data to Google Sheets
+def append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id, range_name):
     try:
         creds = Credentials.from_service_account_file(service_account_file)
         service = build('sheets', 'v4', credentials=creds)
         
-        # Préparer les en-têtes de colonnes et les abonnés
+        # Prepare column headers
         column_ids = df['column_id'].tolist()
         subscribers = df['subscribers'].tolist()
         #print(subscribers)
-        # Ajouter la colonne 'Date' aux en-têtes si elle n'existe pas
+         # Add 'Date' column if it doesn't exist
         if 'Date' not in column_ids:
             column_ids.insert(0, 'Date')  # Ajouter 'Date' au début des en-têtes
 
-        # Ajouter la date actuelle à chaque ligne de données
+        # Add the current date to each data row
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')  # Format de la date : YYYY-MM-DD
-        subscribers_with_date = [current_date] + subscribers  # Ajouter la date en première position
+        subscribers_with_date = [current_date] + subscribers  # Add date in first position
     
-        # Préparer les valeurs à envoyer à Google Sheets
-        values = [subscribers_with_date]  # Une seule ligne avec les abonnés
+        # Prepare values to be sent to Google Sheets
+        values = [subscribers_with_date]  # one line with subscribers
         body = {
             'values': values
         }
         
-        # Obtenir la plage actuelle des en-têtes
+        # Add headers if they don't exist
         sheet = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_name).execute()
         existing_values = sheet.get('values', [])
 
-        # Ajouter les en-têtes s'ils n'existent pas
+        # Add headers if they don't exist
         if not existing_values:
             header = [column_ids]
             body['values'].insert(0, header)
         
-        # Ajouter la nouvelle ligne à la fin des données existantes
+        # Append the new row to the end of the existing data
         result = service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range=range_name,
@@ -104,42 +123,91 @@ def append_to_google_sheet(df, service_account_file, spreadsheet_id, range_name)
     except Exception as e:
         logging.error(f"Error when adding data to the Google Sheets: {e}")
 
-# Fonction principale pour traiter les données et ajouter à Google Sheets
+# Function to append data to Google Sheets
+def append_to_google_sheet_views(df, service_account_file, spreadsheet_id, range_name):
+    try:
+        creds = Credentials.from_service_account_file(service_account_file)
+        service = build('sheets', 'v4', credentials=creds)
+        
+        # Prepare column headers
+        column_ids = df['column_id'].tolist()
+        views = df['views'].tolist()
+        #print(views)
+         # Add 'Date' column if it doesn't exist
+        if 'Date' not in column_ids:
+            column_ids.insert(0, 'Date')  # Ajouter 'Date' au début des en-têtes
+
+        # Add the current date to each data row
+        current_date = datetime.datetime.now().strftime('%Y-%m-%d')  # Format de la date : YYYY-MM-DD
+        views_with_date = [current_date] + views  # Add date in first position
+    
+        # Prepare values to be sent to Google Sheets
+        values = [views_with_date]  # one line with subscribers
+        body = {
+            'values': values
+        }
+        
+        # Add headers if they don't exist
+        sheet = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=range_name).execute()
+        existing_values = sheet.get('values', [])
+
+        # Add headers if they don't exist
+        if not existing_values:
+            header = [column_ids]
+            body['values'].insert(0, header)
+        
+        # Append the new row to the end of the existing data
+        result = service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id,
+            range=range_name,
+            valueInputOption='USER_ENTERED',
+            insertDataOption='INSERT_ROWS',
+            body=body
+        ).execute()
+        
+        #print(f"Appended {result.get('updates', {}).get('updatedCells', 0)} cells in {range_name}")
+        logging.info(f"Appended {result.get('updates', {}).get('updatedCells', 0)} cells in {range_name}")
+    except Exception as e:
+        logging.error(f"Error when adding data to the Google Sheets: {e}")
+
+# Main function to fetch data and append it to Google Sheets
 def fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_name):
     try:
         df = pd.read_csv(csv_file, sep=';')
         #df = pd.read_csv('channels_test.csv', sep=';')
         
-        # Vérifier la présence de la colonne 'url_or_id'
+         # Ensure 'url_or_id' column is present
         if 'url_or_id' not in df.columns:
             raise KeyError("The CSV file must contain a 'url_or_id' column.")
         
         logging.info("Retrieving channel IDs")
-        # Obtenir les IDs de chaîne et les abonnés
+        # Get channel IDs, subscribers, and views
         df['channel_id'] = df['url_or_id'].apply(lambda x: get_channel_id(api_key, x))
         df['subscribers'] = df['channel_id'].apply(lambda x: get_subscriber_count(api_key, x) if x else None)
-        
-        # Créer la colonne 'column_id' avec le '@' retiré si nécessaire
+        df['views'] = df['channel_id'].apply(lambda x: get_view_count(api_key, x) if x else None)
+
+         # Create 'column_id' without '@' if necessary
         df['column_id'] = df['url_or_id'].apply(lambda x: x[1:] if x.startswith('@') else x)
         
         logging.info("Adding data in Google Sheets")
-        # Ajouter à Google Sheets avec les données
-        append_to_google_sheet(df, service_account_file, spreadsheet_id, range_name)
+        # Append data to Google Sheets
+        #append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id, 'Sheet1')
+        append_to_google_sheet_views(df, service_account_file, spreadsheet_id, 'Sheet2')
     except Exception as e:
         logging.error(f"Error when retrieving and adding data: {e}")
 
-# Exemple d'utilisation
+# Main function
 if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # Construct the log file path
     csv_file = os.path.join(current_dir, 'channels.csv')
-    # Remplacez par votre clé API YouTube et le chemin vers votre fichier JSON des clés
-    api_key = 'AIzaSyDDrOYh5SJHaZw-n99sXFlSMS3uEPLXm4g'
+    # Youtube API key and service account json to access google sheets
+    api_key = os.getenv("YOUTUBE_API_KEY")
     service_account_file = os.path.join(current_dir, 'dashboardcrypto-431910-f1f9c1cf4069.json')
     spreadsheet_id = '1KxY1rkhY8YE6BArS69qu4e1LeutR-fvQk26mxU3lrL0'
-    range_name = 'Sheet1'  # Plage où vous souhaitez ajouter les données, ajustez selon besoin
+    range_name = 'Sheet1'  # Sheet range we want to add the data
 
-    logging.info("Démarrage du script")
-    # Appel de la fonction principale
+    logging.info("Script start")
+    # Main function call
     fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, range_name)
-    logging.info("Fin du script")
+    logging.info("End of script")

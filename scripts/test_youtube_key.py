@@ -1,6 +1,5 @@
 #get google data
-
-#api_key ='AIzaSyBSVnO4iFd7EKSoEFeJfn44N-bHTbIpJHU'
+import os
 
 from googleapiclient.discovery import build
 
@@ -13,7 +12,8 @@ def test_api_key(api_key):
     response = request.execute()
     return response
 
-api_key = 'AIzaSyBSVnO4iFd7EKSoEFeJfn44N-bHTbIpJHU'  # Replace with your API key
+api_key = os.getenv("YOUTUBE_API_KEY")  # Replace with your API key
+
 try:
     response = test_api_key(api_key)
     print("API Key is working. Response:")
