@@ -188,6 +188,9 @@ def fetch_and_append(api_key, csv_file, service_account_file, spreadsheet_id, ra
 
          # Create 'column_id' without '@' if necessary
         df['column_id'] = df['url_or_id'].apply(lambda x: x[1:] if x.startswith('@') else x)
+
+        # Handle NaN values by replacing them with empty strings or another placeholder
+        df = df.fillna('')  # Replace NaN with empty strings
         
         logging.info("Adding data in Google Sheets")
         # Append data to Google Sheets
