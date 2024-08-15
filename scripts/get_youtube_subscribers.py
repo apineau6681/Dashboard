@@ -4,6 +4,7 @@ from google.oauth2.service_account import Credentials
 import datetime
 import logging
 import os
+import yfinance as yf  # Import the yfinance library
 
 # Get the current file's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +77,20 @@ def get_view_count(api_key, channel_id):
     except Exception as e:
         logging.error(f"Error when retrieving view count for channel {channel_id}: {e}")
 
+# Function to get the Bitcoin closing price from the previous day
+def get_bitcoin_price():
+    try:
+        # Get the Bitcoin data
+        btc = yf.Ticker("BTC-USD")
+        # Get the last available market data
+        hist = btc.history(period="5d")  # Get the last 5 days to ensure we have the previous day
+        closing_price = hist['Close'][-2]  # Get the second to last closing price
+        logging.info(f"Bitcoin closing price retrieved: {closing_price}")
+        return closing_price
+    except Exception as e:
+        logging.error(f"Error when retrieving Bitcoin price: {e}")
+        return None
+
 # Function to append data to Google Sheets
 def append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id, range_name):
     try:
@@ -94,6 +109,10 @@ def append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id,
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')  # Format de la date : YYYY-MM-DD
         subscribers_with_date = [current_date] + subscribers  # Add date in first position
     
+        # Add Bitcoin price to each data row
+        bitcoin_price = get_bitcoin_price()
+        subscribers_with_date.append(bitcoin_price)  # Add Bitcoin price at the end
+
         # Prepare values to be sent to Google Sheets
         values = [subscribers_with_date]  # one line with subscribers
         body = {
@@ -106,7 +125,7 @@ def append_to_google_sheet_subscribers(df, service_account_file, spreadsheet_id,
 
         # Add headers if they don't exist
         if not existing_values:
-            header = [column_ids]
+            header = [column_ids + ['Bitcoin_Price']]  # Add 'Bitcoin_Price' to headers
             body['values'].insert(0, header)
         
         # Append the new row to the end of the existing data
@@ -140,6 +159,11 @@ def append_to_google_sheet_views(df, service_account_file, spreadsheet_id, range
         # Add the current date to each data row
         current_date = datetime.datetime.now().strftime('%Y-%m-%d')  # Format de la date : YYYY-MM-DD
         views_with_date = [current_date] + views  # Add date in first position
+
+        # Add Bitcoin price to each data row
+        bitcoin_price = get_bitcoin_price()
+        views_with_date.append(bitcoin_price)  # Add Bitcoin price at the end
+
     
         # Prepare values to be sent to Google Sheets
         values = [views_with_date]  # one line with subscribers
@@ -153,7 +177,7 @@ def append_to_google_sheet_views(df, service_account_file, spreadsheet_id, range
 
         # Add headers if they don't exist
         if not existing_values:
-            header = [column_ids]
+            header = [column_ids + ['Bitcoin_Price']]  # Add 'Bitcoin_Price' to headers
             body['values'].insert(0, header)
         
         # Append the new row to the end of the existing data
