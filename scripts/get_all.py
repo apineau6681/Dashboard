@@ -15,7 +15,7 @@ def run_script(script_name):
         print(e.stderr)
 
 # List of scripts to be executed
-scripts = ['get_BTC_data.py', 'get_BTC_ROI.py', 'get_crypto_prices.py','get_youtube_subscribers.py','get_google_trends.py','get_google_trends_nb_days.py']
+scripts = ['get_BTC_data.py', 'get_BTC_ROI.py', 'get_crypto_prices.py','get_youtube_subscribers.py','get_google_trends.py','get_google_trends_nb_days.py','get_futures_rates']
 
 # Execute each script
 for script in scripts:
