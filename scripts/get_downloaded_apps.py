@@ -66,32 +66,25 @@ def convert_download_count(download_str):
 def update_google_sheet(data):
     sheet = service.spreadsheets()
 
-    # Fetch existing data from the sheet
-    existing_data = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
-    values = existing_data.get('values', [])
-    
-    # Check if the header row is present, otherwise create one
-    if not values:
-        header = ["Date"] + [app_name for app_name in data.keys()]
-        values.append(header)
-    
-    # Prepare the new row of data
-    new_row = [datetime.now().strftime('%Y-%m-%d %H:%M:%S')] + [data[app_name] for app_name in data.keys()]
-    values.append(new_row)
+    # Prepare the new row of data, using ISO format for the datetime string
+    new_row = [datetime.now().isoformat()] + [data[app_name] for app_name in data.keys()]
 
     body = {
-        'values': values
+        'values': [new_row]
     }
 
-    # Update the sheet
-    result = sheet.values().update(
+    # Append the new row to the sheet
+    result = sheet.values().append(
         spreadsheetId=SPREADSHEET_ID,
         range=RANGE_NAME,
-        valueInputOption="RAW",
+        valueInputOption="USER_ENTERED",  # Allow Google Sheets to interpret the value
+        insertDataOption="INSERT_ROWS",  # Ensure the new row is added at the end
         body=body
     ).execute()
 
-    print(f"Updated {result.get('updatedCells')} cells.")
+    print(f"Appended {result.get('updates').get('updatedCells')} cells.")
+
+
 
 def main():
     # App IDs for the mentioned apps
