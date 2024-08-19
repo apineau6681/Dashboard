@@ -101,6 +101,7 @@ def main():
         'CoinGecko': 'com.coingecko.coingeckoapp',
         'Bybit': 'com.bybit.app',
         'KuCoin': 'com.kubi.kucoin'
+        'Uniswap': 'com.uniswap.mobile'
     }
     
     # Fetch and prepare data
