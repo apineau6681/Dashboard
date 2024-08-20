@@ -100,7 +100,7 @@ def main():
         'Ledger Live': 'com.ledger.live',
         'CoinGecko': 'com.coingecko.coingeckoapp',
         'Bybit': 'com.bybit.app',
-        'KuCoin': 'com.kubi.kucoin'
+        'KuCoin': 'com.kubi.kucoin',
         'Uniswap': 'com.uniswap.mobile'
     }
     
