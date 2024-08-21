@@ -66,8 +66,8 @@ def convert_download_count(download_str):
 def update_google_sheet(data):
     sheet = service.spreadsheets()
 
-    # Prepare the new row of data, using ISO format for the datetime string
-    new_row = [datetime.now().isoformat()] + [data[app_name] for app_name in data.keys()]
+    # Prepare the new row of data, using ISO format for the datetime string, date format: YYYY-MM-DD
+    new_row = [datetime.now().strftime('%Y-%m-%d')] + [data[app_name] for app_name in data.keys()]
 
     body = {
         'values': [new_row]
