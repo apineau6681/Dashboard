@@ -14,12 +14,15 @@ btc_data = yf.download('BTC-USD', start=start_date, end=end_date)
 ixs_data = yf.download('IXS-USD', start=start_date, end=end_date)
 xrp_data = yf.download('XRP-USD', start=start_date, end=end_date)
 csc_data = yf.download('CSC-USD', start=start_date, end=end_date)
+sp500_data = yf.download('^GSPC', start=start_date, end=end_date)  # S&P 500 data
+
 
 # Reset the index to include the date as a column
 btc_data.reset_index(inplace=True)
 ixs_data.reset_index(inplace=True)
 xrp_data.reset_index(inplace=True)
 csc_data.reset_index(inplace=True)
+sp500_data.reset_index(inplace=True)
 
 # Select the desired columns including the date
 df_btc = btc_data[['Date', 'Close']]
@@ -34,10 +37,14 @@ df_xrp = df_xrp.rename(columns = {'Close':'XRP_Price'})
 df_csc = csc_data[['Date', 'Close']]
 df_csc = df_csc.rename(columns = {'Close':'CSC_Price'})
 
+df_sp500 = sp500_data[['Date', 'Close']]
+df_sp500 = df_sp500.rename(columns = {'Close':'SP500'})
+
+
 #df_data = pd.merge(df_data, df_xrp, on = 'Date')
 
 # List of DataFrames
-dfs = [df_btc, df_ixs, df_xrp, df_csc]
+dfs = [df_btc, df_ixs, df_xrp, df_csc, df_sp500]
 
 # Use reduce to merge DataFrames
 df_data = reduce(lambda left, right: pd.merge(left, right, on='Date'), dfs)
