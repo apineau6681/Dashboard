@@ -1,3 +1,5 @@
+# Your FRED API key
+
 import requests
 import pandas as pd
 import gspread
@@ -70,20 +72,20 @@ inflation_data = inflation_data.sort_values(by='date')
 unemployment_data = unemployment_data.sort_values(by='date')
 
 # Calculate monthly inflation rates
-inflation_data['Previous_IPC'] = inflation_data['value'].shift(1)
-inflation_data['Inflation_rate'] = ((inflation_data['value'] - inflation_data['Previous_IPC']) / inflation_data['Previous_IPC']) * 100
+inflation_data['Previous_CPI'] = inflation_data['value'].shift(1)
+inflation_data['Inflation_rate'] = ((inflation_data['value'] - inflation_data['Previous_CPI']) / inflation_data['Previous_CPI']) * 100
 
 # Drop the rows where inflation rate is NaN (i.e., the first row)
 inflation_data = inflation_data.dropna()
 
 # Merge inflation and unemployment data on the date column
-merged_data = pd.merge(inflation_data[['date', 'Previous_IPC', 'Inflation_rate']], 
+merged_data = pd.merge(inflation_data[['date', 'value', 'Inflation_rate']], 
                        unemployment_data[['date', 'value']], 
                        on='date', 
                        how='inner')
 
 # Rename columns
-merged_data.columns = ['Date', 'IPC', 'Inflation_rate', 'Unemployment_rate']
+merged_data.columns = ['Date', 'CPI', 'Inflation_rate', 'Unemployment_rate']
 
 # Standardize the date format to YYYY-MM-DD
 merged_data['Date'] = merged_data['Date'].dt.strftime('%Y-%m-%d')
