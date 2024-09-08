@@ -6,14 +6,13 @@ from datetime import datetime
 import os
 
 # Your FRED API key
-fred_api_key = 'a963de8eb5063f6bf00f1869f3fecf9f'
+fred_api_key = os.getenv("FRED_API_KEY")
 
 # Define the FRED API URLs
 inflation_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCNS&api_key={fred_api_key}&file_type=json"
 unemployment_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=UNRATE&api_key={fred_api_key}&file_type=json"
 interest_rate_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=FEDFUNDS&api_key={fred_api_key}&file_type=json"
-debt_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=GFDEBTN&api_key={fred_api_key}&file_type=json"  # US Federal Debt
-savings_rate_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=PSAVERT&api_key={fred_api_key}&file_type=json"  # Personal Savings Rate
+savings_rate_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=PSAVERT&api_key={fred_api_key}&file_type=json"
 
 # Define parameters to get data from January 1, 2020 to the current date
 start_date = '2020-01-01'
@@ -33,39 +32,68 @@ def get_data(url, params):
         data = response.json()
         if 'observations' in data:
             df = pd.DataFrame(data['observations'])
+            # Check if required columns exist
+            if 'date' in df.columns and 'value' in df.columns:
+                print(f"Data for {url}: Columns are present.")
+            else:
+                print(f"Data for {url}: Columns missing. Available columns: {df.columns.tolist()}")
             return df
     return pd.DataFrame()
 
-# Get data for inflation, unemployment, interest rate, debt, and savings rate
+# Get data
 inflation_data = get_data(inflation_url, params)
 unemployment_data = get_data(unemployment_url, params)
 interest_rate_data = get_data(interest_rate_url, params)
-debt_data = get_data(debt_url, params)
 savings_rate_data = get_data(savings_rate_url, params)
 
-# Convert date to datetime format and value to numeric for all datasets
-for data in [inflation_data, unemployment_data, interest_rate_data, debt_data, savings_rate_data]:
+# Function to ensure data has 'date' and 'value' columns
+def ensure_columns(data, label):
+    if 'date' not in data.columns or 'value' not in data.columns:
+        print(f"Data for {label} does not contain required columns. Columns present: {data.columns.tolist()}")
+        raise ValueError(f"Expected columns 'date' and 'value' are missing in the {label} data.")
+
+# Ensure all datasets have the required columns
+for data, label in [(inflation_data, 'Inflation'), (unemployment_data, 'Unemployment'), 
+                    (interest_rate_data, 'Interest Rate'), (savings_rate_data, 'Savings Rate')]:
+    ensure_columns(data, label)
+
+# Convert 'date' to datetime format and 'value' to numeric
+def convert_data(data):
     data['date'] = pd.to_datetime(data['date'])
     data['value'] = pd.to_numeric(data['value'], errors='coerce')
+    return data
 
-# Filter data from January 1, 2020 onwards and sort by date
-for data in [inflation_data, unemployment_data, interest_rate_data, debt_data, savings_rate_data]:
+# Apply conversion
+inflation_data = convert_data(inflation_data)
+unemployment_data = convert_data(unemployment_data)
+interest_rate_data = convert_data(interest_rate_data)
+savings_rate_data = convert_data(savings_rate_data)
+
+# Filter and sort data
+def filter_and_sort(data):
     data = data[data['date'] >= pd.to_datetime(start_date)]
-    data.sort_values(by='date', inplace=True)
+    return data.sort_values(by='date')
+
+# Apply filtering and sorting
+inflation_data = filter_and_sort(inflation_data)
+unemployment_data = filter_and_sort(unemployment_data)
+interest_rate_data = filter_and_sort(interest_rate_data)
+savings_rate_data = filter_and_sort(savings_rate_data)
 
 # Calculate monthly inflation rates
 inflation_data['Previous_CPI'] = inflation_data['value'].shift(1)
 inflation_data['Inflation_rate'] = ((inflation_data['value'] - inflation_data['Previous_CPI']) / inflation_data['Previous_CPI']) * 100
 inflation_data.dropna(inplace=True)
 
-# Merge inflation, unemployment, interest rate, debt, and savings rate data on the date column
-merged_data = pd.merge(inflation_data[['date', 'value', 'Inflation_rate']], unemployment_data[['date', 'value']], on='date', how='inner', suffixes=('_CPI', '_UNRATE'))
+# Merge datasets
+merged_data = pd.merge(inflation_data[['date', 'value', 'Inflation_rate']], 
+                       unemployment_data[['date', 'value']], 
+                       on='date', how='inner', suffixes=('_CPI', '_UNRATE'))
 merged_data = pd.merge(merged_data, interest_rate_data[['date', 'value']], on='date', how='inner')
-merged_data = pd.merge(merged_data, debt_data[['date', 'value']], on='date', how='inner')
 merged_data = pd.merge(merged_data, savings_rate_data[['date', 'value']], on='date', how='inner')
 
 # Rename columns
-merged_data.columns = ['Date', 'CPI', 'Inflation_rate', 'Unemployment_rate', 'Interest_rate', 'Debt', 'Savings_rate']
+merged_data.columns = ['Date', 'CPI', 'Inflation_rate', 'Unemployment_rate', 'Interest_rate', 'Savings_rate']
 
 # Standardize the date format to YYYY-MM-DD
 merged_data['Date'] = merged_data['Date'].dt.strftime('%Y-%m-%d')
