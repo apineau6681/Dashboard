@@ -27,7 +27,7 @@ pytrends = TrendReq(hl='en-US', tz=360)
 search_terms = ["Bitcoin", "XRP", "Crypto"]
 
 # Define the number of days to retrieve
-num_days = 90  # Set the number of days you want to retrieve
+num_days = 60  # Set the number of days you want to retrieve
 
 # Calculate the start date based on the number of days
 end_date = datetime.today().strftime('%Y-%m-%d')
