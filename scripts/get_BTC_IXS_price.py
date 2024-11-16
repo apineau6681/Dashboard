@@ -5,20 +5,24 @@ from functools import reduce
 import pandas as pd
 
 # Define the start and end dates
-start_date = '2024-01-01'
+start_date = '2024-03-01'
 end_date = pd.Timestamp.now().strftime('%Y-%m-%d')
 
 # Download historical data for BTC from Yahoo Finance
 btc_data = yf.download('BTC-USD', start=start_date, end=end_date)
 ixs_data = yf.download('IXS-USD', start=start_date, end=end_date)
-xrp_data = yf.download('XRP-USD', start=start_date, end=end_date)
-csc_data = yf.download('CSC-USD', start=start_date, end=end_date)
+#xrp_data = yf.download('XRP-USD', start=start_date, end=end_date)
+#csc_data = yf.download('CSC-USD', start=start_date, end=end_date)
+sol_data = yf.download('SOL-USD', start=start_date, end=end_date)
+sui_data = yf.download('SUI-USD', start=start_date, end=end_date)
 
 # Reset the index to include the date as a column
 btc_data.reset_index(inplace=True)
 ixs_data.reset_index(inplace=True)
-xrp_data.reset_index(inplace=True)
-csc_data.reset_index(inplace=True)
+#xrp_data.reset_index(inplace=True)
+#csc_data.reset_index(inplace=True)
+sol_data.reset_index(inplace=True)
+sui_data.reset_index(inplace=True)
 
 # Select the desired columns including the date
 df_btc = btc_data[['Date', 'Close']]
@@ -27,16 +31,22 @@ df_btc = df_btc.rename(columns = {'Close':'BTC_Price'})
 df_ixs = ixs_data[['Date', 'Close']]
 df_ixs = df_ixs.rename(columns = {'Close':'IXS_Price'})
 
-df_xrp = xrp_data[['Date', 'Close']]
-df_xrp = df_xrp.rename(columns = {'Close':'XRP_Price'})
+#df_xrp = xrp_data[['Date', 'Close']]
+#df_xrp = df_xrp.rename(columns = {'Close':'XRP_Price'})
 
-df_csc = csc_data[['Date', 'Close']]
-df_csc = df_csc.rename(columns = {'Close':'CSC_Price'})
+#df_csc = csc_data[['Date', 'Close']]
+#df_csc = df_csc.rename(columns = {'Close':'CSC_Price'})
+
+df_sol = sol_data[['Date', 'Close']]
+df_sol = df_sol.rename(columns = {'Close':'SOL_Price'})
+
+df_sui = sui_data[['Date', 'Close']]
+df_sui = df_sui.rename(columns = {'Close':'SUI_Price'})
 
 #df_data = pd.merge(df_data, df_xrp, on = 'Date')
 
 # List of DataFrames
-dfs = [df_btc, df_ixs, df_xrp, df_csc]
+dfs = [df_btc, df_ixs, df_sol, df_sui]
 
 # Use reduce to merge DataFrames
 df_data = reduce(lambda left, right: pd.merge(left, right, on='Date'), dfs)
