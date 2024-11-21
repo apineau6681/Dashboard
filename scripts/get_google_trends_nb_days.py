@@ -24,10 +24,10 @@ WORKSHEET_NAME = 'Sheet1'  # Name of the worksheet where you want to write the d
 pytrends = TrendReq(hl='en-US', tz=360)
 
 # Define the search terms
-search_terms = ["Bitcoin", "XRP", "Crypto"]
+search_terms = ["Bitcoin", "Solana", "XRP", "Crypto"]
 
 # Define the number of days to retrieve
-num_days = 60  # Set the number of days you want to retrieve
+num_days = 30  # Set the number of days you want to retrieve
 
 # Calculate the start date based on the number of days
 end_date = datetime.today().strftime('%Y-%m-%d')
@@ -49,14 +49,18 @@ if 'isPartial' in trends_df.columns:
 # Fetch BTC Close Price using yfinance
 btc_data = yf.download('BTC-USD', start=start_date, end=end_date)
 xrp_data = yf.download('XRP-USD', start=start_date, end=end_date)
+sol_data = yf.download('SOL-USD', start=start_date, end=end_date)
 btc_close_prices = btc_data[['Close']]
 xrp_close_prices = xrp_data[['Close']]
+sol_close_prices = sol_data[['Close']]
 btc_close_prices.rename(columns={'Close': 'BTC_Price'}, inplace=True)
 xrp_close_prices.rename(columns={'Close': 'XRP_Price'}, inplace=True)
+sol_close_prices.rename(columns={'Close': 'SOL_Price'}, inplace=True)
 
 # Merge BTC close prices with Google Trends data
 combined_btc_df = trends_df.join(btc_close_prices, how='inner')
-combined_df = combined_btc_df.join(xrp_close_prices, how='inner')
+combined_sol_df = combined_btc_df.join(sol_close_prices, how='inner')
+combined_df = combined_sol_df.join(xrp_close_prices, how='inner')
 
 
 # Reset the index to include the 'Date' as a column
