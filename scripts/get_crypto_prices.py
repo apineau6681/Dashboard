@@ -1,13 +1,9 @@
 import yfinance as yf
 import os
 import pandas as pd
-import logging
 from functools import reduce
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-
-# Setup logging
-logging.basicConfig(filename="btc_data_log.txt", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Define the start and end dates
 start_date = '2024-01-01'
@@ -68,12 +64,9 @@ df_data['Date'] = df_data['Date'].apply(convert_to_google_sheets_date)
 # Ensure no empty values in the DataFrame (to avoid issues with Google Sheets API)
 df_data = df_data.dropna(how='any')  # Remove rows with any empty cells
 
-# Before logging, print the first few rows of df_data to console for debugging
+# Display the first 10 rows of df_data
 print("First 10 rows of df_data:")
 print(df_data.head(10))
-
-# Log the first 10 rows of df_data for verification
-logging.info(f"First 10 rows of df_data:\n{df_data.head(10)}")
 
 # Authentication
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -97,7 +90,6 @@ try:
         valueInputOption='RAW',
         body={'values': values}
     ).execute()
-    logging.info(f"{result.get('updatedCells')} cells updated in Sheet1.")
+    print(f"{result.get('updatedCells')} cells updated in Sheet1.")
 except Exception as e:
-    logging.error(f"Error occurred when updating 'Sheet1' sheet: {e}")
     print(f"Error occurred when updating 'Sheet1' sheet: {e}")
